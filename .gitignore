@@ -54,6 +54,7 @@ Thumbs.db
 *.ckpt
 
 balloon
+result_models/
 
 
 
