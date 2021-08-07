@@ -53,6 +53,7 @@ Thumbs.db
 *.onnx
 *.ckpt
 
+result_models/
 
 
 

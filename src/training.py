@@ -97,7 +97,7 @@ def train_model(model, train_dataset, val_dataset, config, weights_path=None, lo
 
     # Prepare training callbacks list
     model_md5_config = hashlib.md5(config.__repr__().encode()).hexdigest()
-    checkpoint_path = os.path.join(config['callback']['log_dir'],
+    checkpoint_path = os.path.join(config['callback']['save_dir'],
                                    'maskrcnn_' + config['backbone'] + f'_{model_md5_config}' + '_cp-{epoch:04d}.ckpt')
     callbacks_list = [
         tf.keras.callbacks.ModelCheckpoint(
