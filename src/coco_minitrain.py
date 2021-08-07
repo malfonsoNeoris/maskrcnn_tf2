@@ -21,20 +21,19 @@ if __name__ == '__main__':
 
     CONFIG.update(plates.COCO_CONFIG)
 
-    # Set only 5 COCO classes
     CONFIG.update({
                    'image_shape': (256, 256, 3),
                    'image_resize_mode': 'square',
                    'img_size': 256,
-                   'image_min_dim': 200,
+                   'image_min_dim': 128,
                    'image_min_scale': 0,
                    'image_max_dim': 256,
 
-                   'backbone': 'mobilenet',
-                   'epochs': 15,
-                   'batch_size': 1,
-                   'images_per_gpu': 1,
-                   'train_bn': False,
+                #    'backbone': 'mobilenet',
+                   'epochs': 10,
+                #    'batch_size': 1,
+                #    'images_per_gpu': 1,
+                #    'train_bn': False,
 
                    }
         )

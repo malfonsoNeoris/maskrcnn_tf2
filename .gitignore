@@ -63,3 +63,4 @@ result_models/
 *.pb
 *.v2
 *.gz
+logs/*
