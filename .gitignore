@@ -55,6 +55,7 @@ Thumbs.db
 
 balloon
 result_models/
+models/
 
 
 
@@ -64,3 +65,7 @@ result_models/
 *.v2
 *.gz
 logs/*
+*.zip
+*.jpg
+*.whl
+Extras/
