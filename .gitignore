@@ -54,7 +54,11 @@ Thumbs.db
 *.ckpt
 
 result_models/
-
+models/
 
 
 logs/*
+*.zip
+*.jpg
+*.whl
+Extras/
