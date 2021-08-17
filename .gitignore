@@ -58,3 +58,7 @@ balloon
 
 
 
+*.profile-empty
+*.pb
+*.v2
+*.gz
