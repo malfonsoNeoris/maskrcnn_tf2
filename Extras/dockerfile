@@ -1,0 +1,61 @@
+FROM nvcr.io/nvidia/l4t-tensorflow:r32.5.0-tf2.3-py3
+
+# Add a new user "john" with user id 8877
+# RUN useradd -u 8877 user
+# Change to non-root privilege
+# USER user
+
+
+ENV TZ=US/Eastern
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+ENV LC_ALL C.UTF-8
+ENV LANG C.UTF-8
+ENV OPENBLAS_CORETYPE RMV8
+
+RUN apt-get update
+RUN apt-get update --fix-missing && apt-get install ffmpeg libsm6 libxext6 python3-pip cmake g++ gcc -y
+RUN apt-get install build-essential wget ffmpeg libsm6 libxext6 \
+    python3-dev libpython3-dev libgeos-dev liblapack-dev  -y
+
+RUN command apt-get install python3-matplotlib python3-numpy python3-pil python3-scipy python3-tk cython3 -y
+
+RUN python3 -m pip install --upgrade pip
+RUN pip3 install -U  setuptools 
+
+
+# conda create -n tf2.2 python=3.7.7
+RUN pip3 install image-classifiers keras==2.4.3 numpy tqdm pycocotools 
+
+RUN mkdir /src
+WORKDIR /src
+COPY whls/numpy-1.19.5-cp36-cp36m-manylinux2014_aarch64.whl numpy-1.19.5-cp36-cp36m-manylinux2014_aarch64.whl
+RUN pip3 install numpy-1.19.5-cp36-cp36m-manylinux2014_aarch64.whl
+RUN pip3 install  matplotlib watermark pytest
+
+RUN python --version
+COPY whls/scikit_image-0.17.2-cp36-cp36m-linux_aarch64.whl scikit_image-0.17.2-cp36-cp36m-linux_aarch64.whl
+RUN pip3 install numpy>=1.15.1 scipy>=1.0.1 matplotlib>=2.0.0,!=3.0.0 networkx>=2.0 pillow>=4.3.0,!=7.1.0,!=7.1.1 
+RUN pip3 install imageio>=2.3.0 tifffile>=2019.7.26 PyWavelets>=1.1.1
+RUN pip3 install scikit_image-0.17.2-cp36-cp36m-linux_aarch64.whl
+RUN pip3 install --default-timeout=120 scipy albumentations efficientnet
+
+COPY whls/onnxruntime_gpu-1.4.0-cp36-cp36m-linux_aarch64.whl onnxruntime_gpu-1.4.0-cp36-cp36m-linux_aarch64.whl
+RUN pip3 install onnxruntime_gpu-1.4.0-cp36-cp36m-linux_aarch64.whl
+# ENV http_proxy http://proxy-chain.xxx.com:911/ 
+# ENV https_proxy http://proxy-chain.xxx.com:912/ 
+
+RUN pip3 install jupyterlab
+# RUN pip3 install tf2onnx==1.8.5 onnx==1.8.1 
+RUN pip3 install tf2onnx onnx
+
+
+
+# RUN mkdir /src
+# COPY requirements2.txt /src
+# WORKDIR /src
+
+
+
+
+
+
