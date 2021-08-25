@@ -14,29 +14,37 @@ if __name__ == '__main__':
     random.seed(42)
 
     # Limit GPU memory for tensorflow container
-    tf_limit_gpu_memory(tf, 7500)
+    tf_limit_gpu_memory(tf, 6000)
 
     # Load Mask-RCNN config
     from common.config import CONFIG
 
     CONFIG.update(plates.COCO_CONFIG)
-    CONFIG.update({'image_shape': (256, 256, 3),
+
+
+    img_size = 256
+    image_min_dim = 200
+    backbone = 'resnet50'
+    ds = '500'
+    epochs=10
+
+    CONFIG.update({'image_shape': (img_size, img_size, 3),
                    'image_resize_mode': 'square',
-                   'img_size': 256,
-                   'image_max_dim': 256,
-                   'backbone': 'resnet18',
-                   'epochs': 50,
+                   'img_size': img_size,
+                   'image_min_dim': img_size,
+                   'image_max_dim': img_size,
+                   'backbone': backbone,
+                   'epochs': epochs,
                    'batch_size': 1,
                    'images_per_gpu': 1,
                    'train_bn': True,
                    'use_multiprocessing': True,
                    'workers': mp.cpu_count()
-
                    }
                   )
 
     # Set folder for coco dataset
-    base_dir = r'/mnt/data/cx-ir/patentes_aug'
+    base_dir = f'/data/cx-ir/patentes_{ds}'
 
     # Initialize training and validation datasets
     train_dataset = plates.PlateDataset(dataset_dir=base_dir,
@@ -60,14 +68,17 @@ if __name__ == '__main__':
                                    )
 
     # Init Mask-RCNN model
-    CONFIG['callback']['save_dir'] = r'/home/user/MaskTests/maskrcnn_tf2/result_models/resnet18_256x256'
+    CONFIG['callback']['save_dir'] = f'/src/result_models/{backbone}_{img_size}x{img_size}_{ds}'
 
     model = mask_rcnn_functional(config=CONFIG)
 
     # Train
-    train_model(model,
+    try:
+        train_model(model,
                 train_dataset=train_dataset,
                 val_dataset=val_dataset,
                 config=CONFIG,
                 weights_path=None
                 )
+    except Exception as ex:
+        print(ex)

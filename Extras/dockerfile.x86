@@ -43,8 +43,8 @@ RUN pip3 install onnxruntime_gpu
 
 RUN pip3 install jupyterlab
 RUN pip3 install tf2onnx onnx
-
-
+RUN pip3 install onnx_graphsurgeon --index-url https://pypi.ngc.nvidia.com
+RUN pip3 install pycuda
 
 # RUN mkdir /src
 # COPY requirements2.txt /src

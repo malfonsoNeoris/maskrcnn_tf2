@@ -9,11 +9,10 @@ import tf2onnx
 from tensorflow import __version__ as TF_VERSION
 
 
-def maskrcnn_to_onnx(model, model_name, input_spec, kwargs):
+def maskrcnn_to_onnx(model, output_path, input_spec, kwargs):
     if model.name != 'mask_rcnn_inference':
         raise ValueError('Inference model should be send to maskrcnn_to_onnx function.')
 
-    output_path = f'../weights/{model_name}.onnx'
     _, _ = tf2onnx.convert.from_keras(model=model,
                                       input_signature=input_spec,
                                       output_path=output_path,

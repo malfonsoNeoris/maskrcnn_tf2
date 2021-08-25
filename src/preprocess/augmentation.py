@@ -16,7 +16,7 @@ def get_training_augmentation(image_size, normalize=None):
                          img_album.RandomFog(p=0.2),
                          img_album.RandomSunFlare(p=0.2)
                          ]
-    train_transform = [
+    train_transform_hard = [
 
         img_album.OneOf(base_transform_list, p=0.5),
         img_album.OneOf(weather_transform, p=0.5),
@@ -60,7 +60,17 @@ def get_training_augmentation(image_size, normalize=None):
         ),
         img_album.Lambda(mask=round_clip_0_1)
     ]
+    train_transform = [
 
+        img_album.OneOf(base_transform_list, p=0.5),
+        img_album.OneOf(weather_transform, p=0.5),
+
+        img_album.OneOf([img_album.HorizontalFlip(p=0.5),
+                         img_album.VerticalFlip(p=0.5)]
+                        ),
+
+        img_album.Lambda(mask=round_clip_0_1)
+    ]
     if normalize:
         # After normalization change array back to unit8 for further augmentation
         train_transform.insert(0, img_album.Lambda(image=denorm_image))

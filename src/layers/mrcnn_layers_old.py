@@ -819,56 +819,6 @@ class DetectionLayer(tfl.Layer):
         self.built = True
         super(DetectionLayer, self).build(input_shape)
 
-
-    def nms_keep_map(class_id, ):
-        """Apply Non-Maximum Suppression on ROIs of the given class."""
-        # Indices of ROIs of the given class
-        ixs = tf.where(tf.equal(pre_nms_class_ids, class_id))[:, 0]
-        # Apply NMS
-        class_keep = tf.image.non_max_suppression(
-            tf.gather(pre_nms_rois, ixs),
-            tf.gather(pre_nms_scores, ixs),
-            max_output_size=self.detection_max_instances,
-            iou_threshold=self.detection_nms_threshold)
-        # Map indices
-        class_keep = tf.gather(keep, tf.gather(ixs, class_keep))
-        # Pad with -1 so returned tensors have the same shape
-        gap = self.detection_max_instances - tf.shape(class_keep)[0]
-        class_keep = tf.pad(class_keep, [(0, gap)],
-                            mode='CONSTANT', constant_values=-1)
-        # Set shape so map_fn() can infer result shape
-        # class_keep.set_shape([self.detection_max_instances])
-        return class_keep
-
-    @tf.function
-    def _nms_keep_func(self, class_ids, pre_nms_class_ids,pre_nms_rois, pre_nms_scores,keep ):
-        """
-        An experimental function for replacing nms_keep_map with map_fn.
-        TODO: check/fix for multiple classes
-        Args:
-            class_ids:
-        Returns: class_keep
-
-        """
-        broadcast_equal = tf.equal(pre_nms_class_ids, tf.reshape(class_ids, (-1, 1)))
-        broadcast_equal_int = tf.cast(broadcast_equal, tf.int32)
-        bool_mask = tf.reduce_sum(broadcast_equal_int, axis=0)
-
-        # Apply NMS
-        class_keep = tf.image.non_max_suppression(tf.boolean_mask(
-            pre_nms_rois, bool_mask, axis=None),
-            tf.boolean_mask(pre_nms_scores, bool_mask, axis=None),
-            max_output_size=self.detection_max_instances,
-            iou_threshold=self.detection_nms_threshold)
-        # Map indicies
-        class_keep = tf.gather(keep, class_keep)
-        # Pad with -1 so returned tensors have the same shape
-        gap = self.detection_max_instances - tf.shape(class_keep)[0]
-        class_keep = tf.pad(class_keep, [(0, gap)],
-                            mode='CONSTANT', constant_values=-1)
-        return class_keep
-
-
     def refine_detections(self, rois, probs, deltas, window):
         """Refine classified proposals and filter overlaps and return final
          detections.
@@ -925,10 +875,57 @@ class DetectionLayer(tfl.Layer):
         pre_nms_rois = tf.gather(refined_rois, keep)
         unique_pre_nms_class_ids = tf.unique(pre_nms_class_ids)[0]
 
+        def nms_keep_map(class_id):
+            """Apply Non-Maximum Suppression on ROIs of the given class."""
+            # Indices of ROIs of the given class
+            ixs = tf.where(tf.equal(pre_nms_class_ids, class_id))[:, 0]
+            # Apply NMS
+            class_keep = tf.image.non_max_suppression(
+                tf.gather(pre_nms_rois, ixs),
+                tf.gather(pre_nms_scores, ixs),
+                max_output_size=self.detection_max_instances,
+                iou_threshold=self.detection_nms_threshold)
+            # Map indices
+            class_keep = tf.gather(keep, tf.gather(ixs, class_keep))
+            # Pad with -1 so returned tensors have the same shape
+            gap = self.detection_max_instances - tf.shape(class_keep)[0]
+            class_keep = tf.pad(class_keep, [(0, gap)],
+                                mode='CONSTANT', constant_values=-1)
+            # Set shape so map_fn() can infer result shape
+            # class_keep.set_shape([self.detection_max_instances])
+            return class_keep
+
+        @tf.function
+        def _nms_keep_func(class_ids):
+            """
+            An experimental function for replacing nms_keep_map with map_fn.
+            TODO: check/fix for multiple classes
+            Args:
+                class_ids:
+            Returns: class_keep
+
+            """
+            broadcast_equal = tf.equal(pre_nms_class_ids, tf.reshape(class_ids, (-1, 1)))
+            broadcast_equal_int = tf.cast(broadcast_equal, tf.int32)
+            bool_mask = tf.reduce_sum(broadcast_equal_int, axis=0)
+
+            # Apply NMS
+            class_keep = tf.image.non_max_suppression(tf.boolean_mask(
+                pre_nms_rois, bool_mask, axis=None),
+                tf.boolean_mask(pre_nms_scores, bool_mask, axis=None),
+                max_output_size=self.detection_max_instances,
+                iou_threshold=self.detection_nms_threshold)
+            # Map indicies
+            class_keep = tf.gather(keep, class_keep)
+            # Pad with -1 so returned tensors have the same shape
+            gap = self.detection_max_instances - tf.shape(class_keep)[0]
+            class_keep = tf.pad(class_keep, [(0, gap)],
+                                mode='CONSTANT', constant_values=-1)
+            return class_keep
 
         # 2. Map over class IDs
         # nms_keep = tf.map_fn(nms_keep_map, unique_pre_nms_class_ids, dtype=tf.int64)
-        nms_keep = self._nms_keep_func(unique_pre_nms_class_ids, pre_nms_class_ids,pre_nms_rois, pre_nms_scores,keep )
+        nms_keep = _nms_keep_func(unique_pre_nms_class_ids)
 
         # 3. Merge results into one list, and remove -1 padding
         # nms_keep = tf.reshape(nms_keep, [-1])

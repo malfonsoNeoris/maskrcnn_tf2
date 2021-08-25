@@ -44,12 +44,12 @@ onnx_path = r'Extras/models/maskrcnn_mobilenet_512_512_3_trt_mod.onnx'
 def xx(onnx_model_path, trt_model_path, fp16_mode=False):
     os.chdir('../weights')
 
-# trtexec --onnx=bert.onnx \
-#         --explicitBatch \
-#         --saveEngine=bert_model.trt \
-#         --minShapes=input_ids:1x128,attention_mask:1x128,token_type_ids:1x128 \
-#         --optShapes=input_ids:8x128,attention_mask:8x128,token_type_ids:8x128 \
-#         --maxShapes=input_ids:16x128,attention_mask:16x128,token_type_ids:16x128 \
+    # trtexec --onnx=bert.onnx \
+    #         --explicitBatch \
+    #         --saveEngine=bert_model.trt \
+    #         --minShapes=input_ids:1x128,attention_mask:1x128,token_type_ids:1x128 \
+    #         --optShapes=input_ids:8x128,attention_mask:8x128,token_type_ids:8x128 \
+    #         --maxShapes=input_ids:16x128,attention_mask:16x128,token_type_ids:16x128 \
 
     # Construct appropriate command
     command = [os.environ['TRTEXEC'],
